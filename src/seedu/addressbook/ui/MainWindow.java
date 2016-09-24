@@ -1,6 +1,5 @@
 package seedu.addressbook.ui;
 
-
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextArea;
@@ -22,15 +21,17 @@ public class MainWindow {
 
     private Logic logic;
     private Stoppable mainApp;
+    private String prev;
 
-    public MainWindow(){
+    public MainWindow() {
+        prev = "";
     }
 
-    public void setLogic(Logic logic){
+    public void setLogic(Logic logic) {
         this.logic = logic;
     }
 
-    public void setMainApp(Stoppable mainApp){
+    public void setMainApp(Stoppable mainApp) {
         this.mainApp = mainApp;
     }
 
@@ -40,18 +41,22 @@ public class MainWindow {
     @FXML
     private TextField commandInput;
 
-
     @FXML
     void onCommand(ActionEvent event) {
         try {
             String userCommandText = commandInput.getText();
-            CommandResult result = logic.execute(userCommandText);
-            if(isExitCommand(result)){
-                exitApp();
-                return;
+            if (userCommandText.equals("p")) {
+                setPrev();
+            } else {
+                prev = userCommandText;
+                CommandResult result = logic.execute(userCommandText);
+                if (isExitCommand(result)) {
+                    exitApp();
+                    return;
+                }
+                displayResult(result);
+                clearCommandInput();
             }
-            displayResult(result);
-            clearCommandInput();
         } catch (Exception e) {
             display(e.getMessage());
             throw new RuntimeException(e);
@@ -72,8 +77,13 @@ public class MainWindow {
         commandInput.setText("");
     }
 
+    /** loads previous typed command */
+    private void setPrev() {
+        commandInput.setText(prev);
+    }
+
     /** Clears the output display area */
-    public void clearOutputConsole(){
+    public void clearOutputConsole() {
         outputConsole.clear();
     }
 
@@ -81,7 +91,7 @@ public class MainWindow {
     public void displayResult(CommandResult result) {
         clearOutputConsole();
         final Optional<List<? extends ReadOnlyPerson>> resultPersons = result.getRelevantPersons();
-        if(resultPersons.isPresent()) {
+        if (resultPersons.isPresent()) {
             display(resultPersons.get());
         }
         display(result.feedbackToUser);
@@ -93,18 +103,18 @@ public class MainWindow {
     }
 
     /**
-     * Displays the list of persons in the output display area, formatted as an indexed list.
-     * Private contact details are hidden.
+     * Displays the list of persons in the output display area, formatted as an
+     * indexed list. Private contact details are hidden.
      */
     private void display(List<? extends ReadOnlyPerson> persons) {
         display(new Formatter().format(persons));
     }
 
     /**
-     * Displays the given messages on the output display area, after formatting appropriately.
+     * Displays the given messages on the output display area, after formatting
+     * appropriately.
      */
     private void display(String... messages) {
         outputConsole.setText(outputConsole.getText() + new Formatter().format(messages));
     }
-
 }
